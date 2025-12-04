@@ -4,7 +4,6 @@ import glob
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.colors as pcolors
 from collections import Counter
 
 # ==========================================
@@ -77,15 +76,8 @@ def get_style_features(text):
 def print_colored_df(df, colorscale="RdBu", flip=False):
     """
     Manually prints a DataFrame to the console using ANSI escape codes.
-    
-    Colors are normalized PER COLUMN based on the min/max of that column.
-    Uses Plotly colorscales to determine the color.
-    
-    Args:
-        df (pd.DataFrame): The DataFrame to print.
-        colorscale (str): Any valid Plotly colorscale name (e.g., 'Viridis', 'Plasma', 'RdBu').
-        flip (bool): If True, inverts the colorscale mapping.
     """
+    import plotly.colors as pcolors
     
     # 1. Calculate Min/Max for numeric columns
     col_stats = {}
@@ -95,49 +87,34 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
             c_max = df[col].max()
             col_stats[col] = (c_min, c_max)
 
-    # 2. Calculate Column Widths (Header vs Data)
+    # 2. Calculate Column Widths
     col_widths = {}
     for col in df.columns:
-        # Start with header length
         max_len = len(str(col))
-        
-        # Check length of all values in this column
-        # We must replicate the formatting logic to get the true length
         for val in df[col]:
-            if col in col_stats and isinstance(val, (int, float)):
-                # Numeric format is .3f
+            # Check if column is numeric (in stats) to decide formatting length
+            if col in col_stats:
                 val_len = len(f"{val:.3f}")
             else:
-                # String format
                 val_len = len(str(val))
             
             if val_len > max_len:
                 max_len = val_len
-        
-        # Add a tiny bit of padding (min width 8)
         col_widths[col] = max(max_len, 8)
 
     def get_ansi_color(value, c_min, c_max):
-        """Maps value to ANSI RGB string using Plotly's sampler."""
         if pd.isna(value) or c_min == c_max:
             return "" 
 
-        # Normalize value to 0.0 - 1.0
         try:
             t = (value - c_min) / (c_max - c_min)
-        except ZeroDivisionError:
-            return ""
-
-        if flip:
-            t = 1.0 - t
-
-        # Sample color from Plotly
-        try:
-            color_str = pcolors.sample_colorscale(colorscale, [t])[0]
+            if flip:
+                t = 1.0 - t
+            # Ensure t is a standard float for Plotly
+            color_str = pcolors.sample_colorscale(colorscale, [float(t)])[0]
         except Exception:
             return ""
 
-        # Parse "rgb(r, g, b)"
         matches = re.findall(r'\d+', color_str)
         if len(matches) >= 3:
             r, g, b = map(int, matches[:3])
@@ -146,14 +123,11 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
         return ""
 
     RESET = "\033[0m"
-    
-    # Calculate index width
     index_width = max([len(str(i)) for i in df.index] + [0])
 
     # Print Header
     print(f"{' ' * index_width} ", end="")
     for col in df.columns:
-        # Center the header in the calculated width
         print(f" {str(col).center(col_widths[col])} ", end="")
     print()
 
@@ -163,8 +137,8 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
         for col in df.columns:
             val = row[col]
             
-            # Determine color and format
-            if col in col_stats and isinstance(val, (int, float)):
+            # Simple check: if we calculated stats for this column, treat it as a number
+            if col in col_stats:
                 c_min, c_max = col_stats[col]
                 color = get_ansi_color(val, c_min, c_max)
                 formatted_val = f"{val:.3f}"
@@ -172,7 +146,6 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
                 color = ""
                 formatted_val = str(val)
                 
-            # Right justify the value within the column width
             print(f" {color}{formatted_val.rjust(col_widths[col])}{RESET} ", end="")
         print()
 
