@@ -44,6 +44,15 @@ fig.show()
 
 <img height="400" alt="image" src="https://github.com/user-attachments/assets/bb5543a2-ce52-487d-83e9-a6b1d74c02ab" />
 
+### Image Viewing
+Launch the system's default image viewer for generated plots. Automatically handles multi-file slideshows on Linux (detecting `.desktop` capabilities) and macOS.
+
+```python
+from carter_tools import view_images
+
+# Opens images in a single window/slideshow if supported
+view_images(["output/plot_a.png", "output/plot_b.png"])
+```
 
 ### Stylometry
 Extract linguistic features (function words, punctuation usage, sentence length) for text analysis.
