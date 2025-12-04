@@ -38,7 +38,7 @@ from carter_tools import geomaps_to_df, usa_dmas_choropleth
 df = geomaps_to_df(columns=["data science", "machine learning"])
 
 # Generate Plotly map
-fig = usa_dmas_choropleth(df, color="machine learning", colorscale="Viridis")
+fig = usa_dmas_choropleth(df, color="machine learning", colorscale="RdYlBu_r")
 fig.show()
 ```
 
