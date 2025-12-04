@@ -11,10 +11,6 @@ import sys
 from collections import Counter
 from typing import List, Union
 
-# ==========================================
-# 1. STYLOMETRY (Text Analysis)
-# ==========================================
-
 _FUNCTION_WORDS = [
     "the", "of", "and", "to", "a", "in", "that", "is", "was", "he", 
     "for", "it", "with", "as", "his", "on", "be", "at", "by", "i", 
@@ -73,10 +69,6 @@ def get_style_features(text):
     
     return features
 
-
-# ==========================================
-# 2. VISUALIZATION (Console)
-# ==========================================
 
 def print_colored_df(df, colorscale="RdBu", flip=False):
     """
@@ -155,10 +147,6 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
         print()
 
 
-# ==========================================
-# 3. DATA LOADING (Google Trends / Maps)
-# ==========================================
-
 def geomaps_to_df(path=".", pattern="geoMap *.csv", columns=None):
     """
     Reads multiple Google Trends CSVs matching a pattern and merges them.
@@ -201,10 +189,6 @@ def geomaps_to_df(path=".", pattern="geoMap *.csv", columns=None):
         return result_df
 
 
-# ==========================================
-# 4. PLOTTING (Plotly Maps)
-# ==========================================
-
 def usa_dmas_choropleth(df, color, colorscale="RdBu", **kwargs):
     """
     Generates a Plotly Choropleth map for US DMAs.
@@ -234,10 +218,6 @@ def usa_dmas_choropleth(df, color, colorscale="RdBu", **kwargs):
     )
     
     return fig_map
-
-# ==========================================
-# 5. IMAGE VIEWING
-# ==========================================
 
 def view_images(paths: Union[str, List[str]], log: bool = False):
     """
@@ -330,3 +310,35 @@ def view_images(paths: Union[str, List[str]], log: bool = False):
         if log and len(valid_paths) > 1:
             print("Opening first file only (Windows default behavior).")
         os.startfile(valid_paths[0])
+
+
+def load_data(filepath: str, **kwargs):
+    """
+    Universal data loader. Infers the file type based on extension
+    and passes **kwargs to the underlying pandas read function.
+    
+    Usage:
+        df = load_data("data.csv", sep="|")
+        df = load_data("data.parquet", columns=["id", "val"])
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File not found: {filepath}")
+
+    ext = os.path.splitext(filepath)[1].lower()
+
+    loaders = {
+        ".csv": pd.read_csv,
+        ".tsv": lambda f, **k: pd.read_csv(f, sep="\t", **k),
+        ".parquet": pd.read_parquet,
+        ".xls": pd.read_excel,
+        ".xlsx": pd.read_excel,
+        ".json": pd.read_json,
+        ".pkl": pd.read_pickle,
+        ".pickle": pd.read_pickle,
+        ".feather": pd.read_feather
+    }
+
+    if ext not in loaders:
+        raise ValueError(f"Unsupported file extension: {ext}")
+
+    return loaders[ext](filepath, **kwargs)
