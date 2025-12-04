@@ -15,13 +15,20 @@ Print Pandas DataFrames directly to the console with color gradients.
 
 ```python
 import pandas as pd
+import numpy as np
 from carter_tools import print_colored_df
 
-df = pd.DataFrame({"A": [1, 5, 10], "B": [10, 5, 1]})
+df = pd.DataFrame({
+    "col_a": np.random.normal(loc=0, scale=1, size=20),
+    "col_b": np.random.normal(loc=500, scale=100, size=20)
+})
 
-# Print with a Red-Yellow-Green heatmap
-print_colored_df(df, colorscale="RdYlGn")
+print_colored_df(df, colorscale="RdBu")
 ```
+
+Output:
+
+<img width="569" height="716" alt="image" src="https://github.com/user-attachments/assets/deb253f4-5a4c-48a6-9b1c-b631006ea619" />
 
 ### Google Trends & Mapping
 Clean Google Trends CSVs and map them to US DMAs (Designated Market Areas).
