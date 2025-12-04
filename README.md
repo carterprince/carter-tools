@@ -26,7 +26,7 @@ df = pd.DataFrame({
 print_colored_df(df, colorscale="RdBu")
 ```
 
-<img height="400" alt="image" src="https://github.com/user-attachments/assets/deb253f4-5a4c-48a6-9b1c-b631006ea619" />
+<img height="400" alt="image" src="https://github.com/user-attachments/assets/ce399196-6b70-4a4e-89ad-fbc8fb7e1cab" />
 
 ### Google Trends & Mapping
 Clean Google Trends CSVs and map them to US DMAs (Designated Market Areas).
