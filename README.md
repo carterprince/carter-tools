@@ -26,8 +26,6 @@ df = pd.DataFrame({
 print_colored_df(df, colorscale="RdBu")
 ```
 
-Output:
-
 <img width="569" height="716" alt="image" src="https://github.com/user-attachments/assets/deb253f4-5a4c-48a6-9b1c-b631006ea619" />
 
 ### Google Trends & Mapping
@@ -43,6 +41,9 @@ df = geomaps_to_df(columns=["data science", "machine learning"])
 fig = usa_dmas_choropleth(df, color="machine learning", colorscale="Viridis")
 fig.show()
 ```
+
+<img width="962" height="821" alt="image" src="https://github.com/user-attachments/assets/bb5543a2-ce52-487d-83e9-a6b1d74c02ab" />
+
 
 ### Stylometry
 Extract linguistic features (function words, punctuation usage, sentence length) for text analysis.
