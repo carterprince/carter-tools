@@ -1,10 +1,15 @@
-import os
-import re
 import glob
 import numpy as np
+import os
 import pandas as pd
 import plotly.express as px
+import re
+import shlex
+import subprocess
+import sys
+
 from collections import Counter
+from typing import List, Union
 
 # ==========================================
 # 1. STYLOMETRY (Text Analysis)
@@ -229,3 +234,99 @@ def usa_dmas_choropleth(df, color, colorscale="RdBu", **kwargs):
     )
     
     return fig_map
+
+# ==========================================
+# 5. IMAGE VIEWING
+# ==========================================
+
+def view_images(paths: Union[str, List[str]], log: bool = False):
+    """
+    Opens images using the system default viewer.
+    
+    On Linux, it parses the default .desktop file to determine if the 
+    viewer supports multiple files (slideshow) or just one.
+    
+    Args:
+        paths: A single file path or a list of file paths.
+        log: If True, prints status messages to stdout.
+    """
+    # 1. Normalize input
+    if isinstance(paths, str):
+        paths = [paths]
+    
+    valid_paths = [os.path.abspath(p) for p in paths if os.path.exists(p)]
+    
+    if not valid_paths:
+        if log:
+            print("Error: No valid file paths found.")
+        return
+
+    # --- LINUX LOGIC ---
+    if sys.platform.startswith("linux"):
+        try:
+            # A. Ask the OS for the default app ID
+            app_id = subprocess.check_output(
+                ["xdg-mime", "query", "default", "image/png"], 
+                stderr=subprocess.DEVNULL
+            ).decode().strip()
+
+            if app_id:
+                # B. Find the actual .desktop file in standard paths
+                search_dirs = [
+                    os.path.expanduser("~/.local/share/applications"),
+                    "/usr/local/share/applications",
+                    "/usr/share/applications",
+                    "/var/lib/snapd/desktop/applications"
+                ]
+                
+                exec_cmd = []
+                is_multi = False
+                
+                for directory in search_dirs:
+                    desktop_path = os.path.join(directory, app_id)
+                    if os.path.exists(desktop_path):
+                        # C. Parse the file for the Exec command
+                        with open(desktop_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            for line in f:
+                                if line.startswith("Exec=") and not line.startswith("Exec=env"):
+                                    # Check for multi-file markers (%F or %U)
+                                    is_multi = "%F" in line or "%U" in line
+                                    
+                                    # Clean command: remove 'Exec=' and % placeholders
+                                    raw_cmd = line.split("=", 1)[1].strip()
+                                    exec_cmd = [x for x in shlex.split(raw_cmd) if not x.startswith("%")]
+                                    break
+                        if exec_cmd: break
+
+                # D. Launch based on capabilities
+                if exec_cmd:
+                    if is_multi:
+                        if log:
+                            print(f"Opening {len(valid_paths)} images with {app_id}...")
+                        subprocess.Popen(exec_cmd + valid_paths)
+                    else:
+                        if log:
+                            print(f"Warning: {app_id} only supports single files.")
+                            print(f"Opening first file: {valid_paths[0]}")
+                        subprocess.Popen(exec_cmd + [valid_paths[0]])
+                    return
+
+        except Exception:
+            pass # Fallback to generic xdg-open if anything fails
+
+        # Fallback for Linux
+        if log:
+            print("Warning: Could not detect viewer capabilities. Using xdg-open on first file.")
+        subprocess.Popen(["xdg-open", valid_paths[0]])
+
+    # --- MACOS LOGIC ---
+    elif sys.platform == "darwin":
+        if log:
+            print(f"Opening {len(valid_paths)} images with Preview...")
+        subprocess.Popen(["open"] + valid_paths)
+
+    # --- WINDOWS LOGIC ---
+    elif sys.platform == "win32":
+        if log and len(valid_paths) > 1:
+            print("Opening first file only (Windows default behavior).")
+        os.startfile(valid_paths[0])
