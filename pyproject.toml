@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "carter_tools"
+version = "0.1.0"
+description = "My personal data science utilities"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "numpy",
+    "plotly",
+    "scikit-learn" 
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
