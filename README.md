@@ -15,13 +15,18 @@ Print Pandas DataFrames directly to the console with color gradients.
 
 ```python
 import pandas as pd
+import numpy as np
 from carter_tools import print_colored_df
 
-df = pd.DataFrame({"A": [1, 5, 10], "B": [10, 5, 1]})
+df = pd.DataFrame({
+    "col_a": np.random.normal(loc=0, scale=1, size=20),
+    "col_b": np.random.normal(loc=500, scale=100, size=20)
+})
 
-# Print with a Red-Yellow-Green heatmap
-print_colored_df(df, colorscale="RdYlGn")
+print_colored_df(df, colorscale="RdBu")
 ```
+
+<img height="400" alt="image" src="https://github.com/user-attachments/assets/ce399196-6b70-4a4e-89ad-fbc8fb7e1cab" />
 
 ### Google Trends & Mapping
 Clean Google Trends CSVs and map them to US DMAs (Designated Market Areas).
@@ -33,9 +38,12 @@ from carter_tools import geomaps_to_df, usa_dmas_choropleth
 df = geomaps_to_df(columns=["data science", "machine learning"])
 
 # Generate Plotly map
-fig = usa_dmas_choropleth(df, color="machine learning", colorscale="Viridis")
+fig = usa_dmas_choropleth(df, color="machine learning", colorscale="RdYlBu_r")
 fig.show()
 ```
+
+<img height="400" alt="image" src="https://github.com/user-attachments/assets/bb5543a2-ce52-487d-83e9-a6b1d74c02ab" />
+
 
 ### Stylometry
 Extract linguistic features (function words, punctuation usage, sentence length) for text analysis.
