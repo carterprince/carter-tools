@@ -58,9 +58,28 @@ view_images(["output/plot_a.png", "output/plot_b.png"])
 Extract linguistic features (function words, punctuation usage, sentence length) for text analysis.
 
 ```python
-from carter_tools import get_style_features
+import pandas as pd
+from pathlib import Path
+from carter_tools import get_style_features, print_colored_df
+from tabpfn import TabPFNClassifier
 
-text = "To be, or not to be..."
-features = get_style_features(text)
-# Returns dict: {'fw_the': 50.0, 'punct_comma': 100.0, 'avg_word_len': 2.5...}
+data = []
+for p in Path("FedPapersCorpus").glob("*.txt"):
+    text = p.read_text()
+    feats = get_style_features(text)
+    data.append({**feats, 'label': p.name.split('_')[0], 'filename': p.name})
+
+df = pd.DataFrame(data).set_index('filename')
+train = df[df['label'] != 'dispt']
+pred  = df[df['label'] == 'dispt']
+
+pfn = TabPFNClassifier(n_estimators=8, device='cuda') 
+pfn.fit(train.drop(columns='label'), train['label'])
+results = pd.DataFrame(pfn.predict_proba(pred.drop(columns='label')), 
+                       columns=pfn.classes_, 
+                       index=pred.index)
+results['Prediction'] = results.idxmax(axis=1)
+print_colored_df(results)
 ```
+
+<img height="400" alt="image" src="https://github.com/user-attachments/assets/e1043f21-211c-45af-be14-d7f3e4e9cb70" />
