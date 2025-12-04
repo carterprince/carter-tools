@@ -82,4 +82,4 @@ results['Prediction'] = results.idxmax(axis=1)
 print_colored_df(results)
 ```
 
-<img height="400" alt="image" src="https://github.com/user-attachments/assets/e1043f21-211c-45af-be14-d7f3e4e9cb70" />
+<img height="400" alt="image" src="https://github.com/user-attachments/assets/971d2428-60e0-4c49-b492-57843fcef18b" />
