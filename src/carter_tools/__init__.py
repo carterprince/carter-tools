@@ -104,7 +104,7 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
         # Check length of all values in this column
         # We must replicate the formatting logic to get the true length
         for val in df[col]:
-            if col in col_stats and isinstance(val, (int, float, np.number)):
+            if col in col_stats and isinstance(val, (int, float)):
                 # Numeric format is .3f
                 val_len = len(f"{val:.3f}")
             else:
