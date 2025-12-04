@@ -1,7 +1,49 @@
 # carter-tools
 
-Install:
+Personal utility library for terminal visualizations, Google Trends DMA mapping, and text stylometry.
+
+## Install
 
 ```bash
 uv pip install git+https://github.com/carterprince/carter-tools
+```
+
+## Usage
+
+### Terminal Heatmaps
+Print Pandas DataFrames directly to the console with color gradients.
+
+```python
+import pandas as pd
+from carter_tools import print_colored_df
+
+df = pd.DataFrame({"A": [1, 5, 10], "B": [10, 5, 1]})
+
+# Print with a Red-Yellow-Green heatmap
+print_colored_df(df, colorscale="RdYlGn")
+```
+
+### Google Trends & Mapping
+Clean Google Trends CSVs and map them to US DMAs (Designated Market Areas).
+
+```python
+from carter_tools import geomaps_to_df, usa_dmas_choropleth
+
+# Load and merge all "geoMap*.csv" files in current dir
+df = geomaps_to_df(columns=["data science", "machine learning"])
+
+# Generate Plotly map
+fig = usa_dmas_choropleth(df, color="machine learning", colorscale="Viridis")
+fig.show()
+```
+
+### Stylometry
+Extract linguistic features (function words, punctuation usage, sentence length) for text analysis.
+
+```python
+from carter_tools import get_style_features
+
+text = "To be, or not to be..."
+features = get_style_features(text)
+# Returns dict: {'fw_the': 50.0, 'punct_comma': 100.0, 'avg_word_len': 2.5...}
 ```
