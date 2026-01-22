@@ -147,7 +147,7 @@ def print_colored_df(df, colorscale="RdBu", flip=False):
         print()
 
 
-def geomaps_to_df(path=".", pattern="geoMap *.csv", columns=None):
+def geomaps_to_df(path=".", pattern="geoMap*.csv", columns=None):
     """
     Reads multiple Google Trends CSVs matching a pattern and merges them.
     Expects Google Trends 'DMA' export format.
