@@ -151,6 +151,9 @@ def geomaps_to_df(path=".", pattern="geoMap*.csv", columns=None):
     """
     Reads multiple Google Trends CSVs matching a pattern and merges them.
     Expects Google Trends 'DMA' export format.
+    
+    If the CSV contains a comparison (2 data columns), the resulting column header
+    will be 'term1_term2' containing the values of term1.
     """
     search_path = os.path.join(path, pattern)
     files = sorted(glob.glob(search_path))
@@ -164,21 +167,37 @@ def geomaps_to_df(path=".", pattern="geoMap*.csv", columns=None):
         df = pd.read_csv(f, skiprows=2)
         if len(df.columns) < 2: continue
         
-        raw_col = df.columns[1]
-        new_name = '_'.join([re.sub(r':\s\(.*?\)', '', raw_col).strip()])
+        # 1. Extract and clean the first term name (Column 1)
+        raw_col_1 = df.columns[1]
+        term_1 = re.sub(r':\s\(.*?\)', '', raw_col_1).strip()
         
-        processed = df[['DMA', raw_col]].set_index('DMA')
-        processed.columns = [new_name]
+        # 2. Check if there is a second term (Column 2) and construct the name
+        if len(df.columns) > 2:
+            raw_col_2 = df.columns[2]
+            term_2 = re.sub(r':\s\(.*?\)', '', raw_col_2).strip()
+            new_name = f"{term_1}_{term_2}"
+        else:
+            new_name = term_1
         
+        # 3. Create the processed DF using DMA and the FIRST data column only
+        # We use .iloc to strictly select the 0th (DMA) and 1st (Value) index
+        processed = df.iloc[:, [0, 1]].copy()
+        processed.columns = ['DMA', new_name]
+        
+        # 4. Clean numeric data
         processed[new_name] = pd.to_numeric(
             processed[new_name].astype(str).str.replace('%', '').str.replace('<1', '0.5'), 
             errors='coerce'
         )
+        
+        # Set index for merging later
+        processed = processed.set_index('DMA')
         all_dfs.append(processed)
 
     if not all_dfs:
         return pd.DataFrame()
 
+    # Merge all dataframes
     result_df = pd.concat(all_dfs, axis=1).dropna().astype(int).reset_index()
 
     if columns:
